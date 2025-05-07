@@ -37,18 +37,9 @@ public class SpiceDbApiConstants {
     //Api endpoints.
     public static final String PERMISSION_CHECK = "v1/permissions/check";
     public static final String PERMISSIONS_BULKCHECK = "v1/permissions/checkbulk";
-    public static final String PERMISSIONS_EXPAND = "v1/permissions/expand";
     public static final String LOOKUP_RESOURCES = "v1/permissions/resources";
     public static final String LOOKUP_SUBJECTS = "v1/permissions/subjects";
-
     public static final String RELATIONSHIPS_READ = "v1/relationships/read";
-    public static final String RELATIONSHIPS_WRITE = "v1/relationships/write";
-    public static final String RELATIONSHIPS_DELETE = "v1/relationships/delete";
-    public static final String RELATIONSHIPS_BULKIMPORT = "v1/relationships/importbulk";
-    public static final String RELATIONSHIPS_BULKEXPORT = "v1/relationships/exportbulk";
-
-    public static final String SCHEMA_READ = "v1/schema/read";
-    public static final String SCHEMA_WRITE = "v1/schema/write";
-
-    public static final String WATCH_SERVICE = "v1/watch";
+     //Experimental api endpoints.
+    public static final String REFLECT_SCHEMA = "v1/experimental/reflectschema";
 }
