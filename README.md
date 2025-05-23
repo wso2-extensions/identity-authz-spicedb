@@ -1,24 +1,31 @@
 # identity-authz-spicedb
 
 This extension can be used to communicate with 
-[spiceDB authorization engine](https://authzed.com/docs/spicedb/getting-started/discovering-spicedb) 
+[SpiceDB Authorization Engine](https://authzed.com/docs/spicedb/getting-started/discovering-spicedb) 
 using HTTP requests to enable fine-grained authorization for WSO2 Identity Server. This implementation enables the 
-ability to perform authorization checks and manipulate authorization data including the authorization schema which 
-defines the authorization model.
+ability to perform authorization checks and search objects(Resources, Subjects or Actions) from SpiceDB and send back 
+to WSO2 Identity Server.
 
 ## Setting up
 
-1. Install and set up a spiceDB instance using a way you prefer. Click 
+1. Install and set up a SpiceDB instance using a way you prefer. Click 
 [here](https://authzed.com/docs/spicedb/getting-started/install/macos) to see the available options and set up 
 instructions.
-2. Go to ``identity-authz-spicedb/components/org.wso2.carbon.identity.application.authz.spicedb/src/main/java/org/wso2/
-carbon/identity/ application/authz/spicedb/constants/SpiceDbConstants.java``and change the Field ``BASE_URL`` to your 
-base url. (If you are running on ``localhost:8443`` port this step is not necessary.)
-3. Stay in the same file and add the gRPC pre shared key you created with the spiceDB instance to the ``PRE_SHARED_KEY``
-field.
-4. Build this repository and get the ``.jar`` file from ``identity-authz-spicedb\target``.
-5. Add the ``.jar`` file to ``\repository\components\dropins`` folder in wso2is pack.
-6. Restart WSO2 Identity Server.
+2. Go to `deployment.toml` file in the WSO2 Identity Server pack `([HOME]/repository/conf/deployment.toml)` and add the
+    following configurations.
+    
+    ```toml
+    [fgaEngineConfig]
+    # The URL of the spiceDB instance (e.g. http://localhost:8443/)
+    BasePath = "<base_path>"
+    
+    [fgaEngineConfig.authentication]
+    # the gRPC Pre Shared Key to use when connecting to the spiceDB instance
+    PreSharedKey ="Bearer <pre_shared_key>"
+   ```
+3. Build this repository and get the ``.jar`` file from ``components/org.wso2.carbon.identity.authz.spicedb/target``.
+4. Add the ``.jar`` file to ``[HOME]/repository/components/dropins`` folder in Identity Server pack.
+5. Restart WSO2 Identity Server.
 
 ## Building from the source
 

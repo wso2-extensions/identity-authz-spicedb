@@ -64,4 +64,34 @@ public class SpiceDbModelConstants {
     public static final String CODE = "code";
     public static final String MESSAGE = "message";
     public static final String DETAILS = "details";
+
+    //Lookup request and response values
+    public static final String LOOKED_AT = "lookedUpAt";
+    public static final String RESOURCE_OBJECT_ID = "resourceObjectId";
+    public static final String AFTER_RESULT_CURSOR = "afterResultCursor";
+    public static final String OPTIONAL_LIMIT = "optionalLimit";
+    public static final String OPTIONAL_SUBJECT_RELATION = "optionalSubjectRelation";
+    public static final String RESULT = "result";
+    public static final String RESOURCE_OBJECT_TYPE = "resourceObjectType";
+    public static final String OPTIONAL_CURSOR = "optionalCursor";
+    public static final String OPTIONAL_CONCRETE_LIMIT = "optionalConcreteLimit";
+    public static final String WILD_CARD_OPTION = "wildCardOption";
+    public static final String SUBJECT_ID = "subjectObjectId";
+    public static final String SUBJECT_OBJECT_TYPE = "subjectObjectType";
+
+    //Reflection API values
+    public static final String OPTIONAL_FILTERS = "optionalFilters";
+    public static final String OPTIONAL_DEFINITION_NAME_FILTER = "optionalDefinitionNameFilter";
+    public static final String OPTIONAL_RELATION_NAME_FILTER = "optionalRelationNameFilter";
+    public static final String OPTIONAL_CAVEAT_NAME_FILTER = "optionalCaveatNameFilter";
+    public static final String OPTIONAL_PERMISSION_NAME_FILTER = "optionalPermissionNameFilter";
+    public static final String DEFINITIONS = "definitions";
+    public static final String DEFINITION_NAME = "name";
+    public static final String DEFINITION_COMMENT = "comment";
+    public static final String DEFINITION_RELATIONS = "relations";
+    public static final String DEFINITION_PERMISSIONS = "permissions";
+    public static final String PERMISSION_NAME = "name";
+    public static final String PERMISSION_COMMENT = "comment";
+    public static final String PARENT_DEFINITION = "parentDefinitionType";
+    public static final String SUBJECT_TYPES = "subjectTypes";
 }

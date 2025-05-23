@@ -82,8 +82,10 @@ public class SpicedbPermissionRequestServiceTest {
 
         service = new SpicedbPermissionRequestService();
         AuthorizationResource resource = mock(AuthorizationResource.class);
+        when(resource.getResourceId()).thenReturn("resourceId");
         AuthorizationAction action = mock(AuthorizationAction.class);
         AuthorizationSubject subject = mock(AuthorizationSubject.class);
+        when(subject.getSubjectId()).thenReturn("subjectId");
         accessEvaluationRequest = new AccessEvaluationRequest(subject, action, resource);
         bulkAccessEvaluationRequest = mock(BulkAccessEvaluationRequest.class);
         ArrayList<AccessEvaluationRequest> requests = new ArrayList<>();
