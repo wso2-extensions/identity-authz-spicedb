@@ -25,10 +25,12 @@ import org.wso2.carbon.identity.authorization.framework.model.AuthorizationActio
 import org.wso2.carbon.identity.authorization.framework.model.AuthorizationResource;
 import org.wso2.carbon.identity.authorization.framework.model.AuthorizationSubject;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test class for {@link CheckPermissionRequest}.
@@ -48,7 +50,7 @@ public class CheckPermissionRequestTest {
     }
 
     @Test
-    public void testConstructorWithValidRequest() {
+    public void testConstructorWithValidRequest() throws Exception {
 
         AccessEvaluationRequest accessEvaluationRequest = new AccessEvaluationRequest(
                 new AuthorizationSubject("subjectType", "subjectId"),
@@ -59,22 +61,35 @@ public class CheckPermissionRequestTest {
         context.put("withTracing", true);
         accessEvaluationRequest.setContext(context);
         CheckPermissionRequest checkPermissionRequest = new CheckPermissionRequest(accessEvaluationRequest);
+        Field resource = checkPermissionRequest.getClass().getDeclaredField("resource");
+        Field permission = checkPermissionRequest.getClass().getDeclaredField("permission");
+        Field subject = checkPermissionRequest.getClass().getDeclaredField("subject");
+        Field contextField = checkPermissionRequest.getClass().getDeclaredField("context");
+
+        resource.setAccessible(true);
+        permission.setAccessible(true);
+        subject.setAccessible(true);
+        contextField.setAccessible(true);
 
         Assert.assertNotNull(checkPermissionRequest);
-        Assert.assertNotNull(checkPermissionRequest.getResource());
-        Assert.assertNotNull(checkPermissionRequest.getPermission());
-        Assert.assertNotNull(checkPermissionRequest.getSubject());
-        Assert.assertNotNull(checkPermissionRequest.getContext());
+        Assert.assertNotNull(resource.get(checkPermissionRequest));
+        Assert.assertNotNull(permission.get(checkPermissionRequest));
+        Assert.assertNotNull(subject.get(checkPermissionRequest));
+        Assert.assertNotNull(contextField.get(checkPermissionRequest));
         Assert.assertTrue(checkPermissionRequest.isWithTracing());
     }
 
     @Test
     public void testConstructorWithInvalidContext() {
 
+        AuthorizationSubject authorizationSubject = mock(AuthorizationSubject.class);
+        when(authorizationSubject.getSubjectId()).thenReturn("subjectId");
+        AuthorizationResource authorizationResource = mock(AuthorizationResource.class);
+        when(authorizationResource.getResourceId()).thenReturn("resourceId");
         AccessEvaluationRequest accessEvaluationRequest = new AccessEvaluationRequest(
-                mock(AuthorizationSubject.class),
+                authorizationSubject,
                 mock(AuthorizationAction.class),
-                mock(AuthorizationResource.class)
+                authorizationResource
                 );
         Map<String, Object> context = new HashMap<>();
         context.put("context", "invalidContext");

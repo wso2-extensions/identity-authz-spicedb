@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test class for {@link BulkCheckPermissionRequest}.
@@ -62,7 +63,9 @@ public class BulkCheckPermissionRequestTest {
 
         ArrayList<AccessEvaluationRequest> items = new ArrayList<>();
         AuthorizationResource authorizationResource = mock(AuthorizationResource.class);
+        when(authorizationResource.getResourceId()).thenReturn("resourceId");
         AuthorizationSubject authorizationSubject = mock(AuthorizationSubject.class);
+        when(authorizationSubject.getSubjectId()).thenReturn("subjectId");
         AuthorizationAction authorizationAction = mock(AuthorizationAction.class);
         items.add(new AccessEvaluationRequest(authorizationSubject, authorizationAction, authorizationResource));
         BulkCheckPermissionRequest bulkCheckPermissionRequest = new BulkCheckPermissionRequest(items);

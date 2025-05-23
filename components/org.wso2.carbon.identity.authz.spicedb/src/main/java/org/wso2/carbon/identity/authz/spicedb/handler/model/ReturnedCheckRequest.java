@@ -61,6 +61,6 @@ public class ReturnedCheckRequest {
 
     public Map<String, Object> getContext() {
 
-        return Collections.unmodifiableMap(context);
+        return this.context != null ? Collections.unmodifiableMap(context) : null;
     }
 }

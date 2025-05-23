@@ -33,6 +33,11 @@ import org.wso2.carbon.identity.authorization.framework.model.AuthorizationResou
 import org.wso2.carbon.identity.authorization.framework.model.AuthorizationSubject;
 import org.wso2.carbon.identity.authorization.framework.model.BulkAccessEvaluationRequest;
 import org.wso2.carbon.identity.authorization.framework.model.BulkAccessEvaluationResponse;
+import org.wso2.carbon.identity.authorization.framework.model.SearchActionsRequest;
+import org.wso2.carbon.identity.authorization.framework.model.SearchResourcesRequest;
+import org.wso2.carbon.identity.authorization.framework.model.SearchResourcesResponse;
+import org.wso2.carbon.identity.authorization.framework.model.SearchSubjectsRequest;
+import org.wso2.carbon.identity.authorization.framework.model.SearchSubjectsResponse;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbApiConstants;
 import org.wso2.carbon.identity.authz.spicedb.handler.exception.SpicedbEvaluationException;
 import org.wso2.carbon.identity.authz.spicedb.handler.model.BulkCheckPermissionRequest;
@@ -40,6 +45,10 @@ import org.wso2.carbon.identity.authz.spicedb.handler.model.BulkCheckPermissionR
 import org.wso2.carbon.identity.authz.spicedb.handler.model.BulkCheckPermissionResult;
 import org.wso2.carbon.identity.authz.spicedb.handler.model.CheckPermissionRequest;
 import org.wso2.carbon.identity.authz.spicedb.handler.model.CheckPermissionResponse;
+import org.wso2.carbon.identity.authz.spicedb.handler.model.LookupResourcesRequest;
+import org.wso2.carbon.identity.authz.spicedb.handler.model.LookupResourcesResult;
+import org.wso2.carbon.identity.authz.spicedb.handler.model.LookupSubjectsRequest;
+import org.wso2.carbon.identity.authz.spicedb.handler.model.LookupSubjectsResult;
 import org.wso2.carbon.identity.authz.spicedb.handler.model.SpiceDbErrorResponse;
 import org.wso2.carbon.identity.authz.spicedb.handler.util.HttpHandler;
 import org.wso2.carbon.identity.authz.spicedb.handler.util.JsonUtil;
@@ -72,23 +81,39 @@ public class SpicedbPermissionRequestServiceTest {
     private static final String REQUEST_BODY = "mockedRequestBody";
     private static final String ERROR_MESSAGE = "error_message";
     private static final String ERROR_CODE = "error_code";
+    private static final String IO_EXCEPTION_MESSAGE = "Connection error";
+    private static final String URI_SYNTAX_EXCEPTION_INPUT = "URI input";
+    private static final String URI_SYNTAX_EXCEPTION_REASON = "URI reason";
+    private static final String SUBJECT_ID = "subjectId";
+    private static final String RESOURCE_ID = "resourceId";
+    private static final String SUBJECT_TYPE = "subjectType";
+    private static final String RESOURCE_TYPE = "resourceType";
 
     private SpicedbPermissionRequestService service;
     private AccessEvaluationRequest accessEvaluationRequest;
     private BulkAccessEvaluationRequest bulkAccessEvaluationRequest;
+    private SearchResourcesRequest searchResourcesRequest;
+    private SearchSubjectsRequest searchSubjectsRequest;
+    private SearchActionsRequest searchActionsRequest;
+    private AuthorizationResource resource;
+    private AuthorizationAction action;
+    private AuthorizationSubject subject;
 
     @BeforeMethod
     public void setUp() {
 
         service = new SpicedbPermissionRequestService();
-        AuthorizationResource resource = mock(AuthorizationResource.class);
-        AuthorizationAction action = mock(AuthorizationAction.class);
-        AuthorizationSubject subject = mock(AuthorizationSubject.class);
+        resource = new AuthorizationResource(RESOURCE_TYPE, RESOURCE_ID);
+        action = mock(AuthorizationAction.class);
+        subject = new AuthorizationSubject(SUBJECT_TYPE, SUBJECT_ID);
         accessEvaluationRequest = new AccessEvaluationRequest(subject, action, resource);
         bulkAccessEvaluationRequest = mock(BulkAccessEvaluationRequest.class);
         ArrayList<AccessEvaluationRequest> requests = new ArrayList<>();
         requests.add(accessEvaluationRequest);
         when(bulkAccessEvaluationRequest.getRequestItems()).thenReturn(requests);
+        searchResourcesRequest = new SearchResourcesRequest(resource, action, subject);
+        searchSubjectsRequest = new SearchSubjectsRequest(subject, action, resource);
+        searchActionsRequest = new SearchActionsRequest(subject, resource);
     }
 
     @AfterMethod
@@ -97,6 +122,9 @@ public class SpicedbPermissionRequestServiceTest {
         service = null;
         accessEvaluationRequest = null;
         bulkAccessEvaluationRequest = null;
+        searchResourcesRequest = null;
+        searchSubjectsRequest = null;
+        searchActionsRequest = null;
     }
 
     @Test
@@ -222,13 +250,13 @@ public class SpicedbPermissionRequestServiceTest {
                     .thenReturn(REQUEST_BODY);
 
             httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
-                    .thenThrow(new IOException("Connection error"));
+                    .thenThrow(new IOException(IO_EXCEPTION_MESSAGE));
 
             try {
                 service.evaluate(accessEvaluationRequest);
                 fail(FAILURE_MESSAGE);
             } catch (SpicedbEvaluationException ex) {
-                assertEquals(ex.getMessage(), "Connection error");
+                assertEquals(ex.getMessage(), IO_EXCEPTION_MESSAGE);
             }
         }
     }
@@ -243,13 +271,13 @@ public class SpicedbPermissionRequestServiceTest {
                     .thenReturn(REQUEST_BODY);
 
             httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
-                    .thenThrow(new URISyntaxException("URI error", "URI error"));
+                    .thenThrow(new URISyntaxException(URI_SYNTAX_EXCEPTION_INPUT, URI_SYNTAX_EXCEPTION_REASON));
 
             try {
                 service.evaluate(accessEvaluationRequest);
                 fail(FAILURE_MESSAGE);
             } catch (SpicedbEvaluationException ex) {
-                assertEquals(ex.getMessage(), "URI error: URI error");
+                assertEquals(ex.getMessage(), URI_SYNTAX_EXCEPTION_REASON + ": " + URI_SYNTAX_EXCEPTION_INPUT);
             }
         }
     }
@@ -380,13 +408,13 @@ public class SpicedbPermissionRequestServiceTest {
                     .thenReturn(REQUEST_BODY);
 
             httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
-                    .thenThrow(new IOException("Connection error"));
+                    .thenThrow(new IOException(IO_EXCEPTION_MESSAGE));
 
             try {
                 service.bulkEvaluate(bulkAccessEvaluationRequest);
                 fail(FAILURE_MESSAGE);
             } catch (SpicedbEvaluationException ex) {
-                assertEquals(ex.getMessage(), "Connection error");
+                assertEquals(ex.getMessage(), IO_EXCEPTION_MESSAGE);
             }
         }
     }
@@ -401,14 +429,335 @@ public class SpicedbPermissionRequestServiceTest {
                     .thenReturn(REQUEST_BODY);
 
             httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
-                    .thenThrow(new URISyntaxException("URI error", "URI error"));
+                    .thenThrow(new URISyntaxException(URI_SYNTAX_EXCEPTION_INPUT, URI_SYNTAX_EXCEPTION_REASON));
 
             try {
                 service.bulkEvaluate(bulkAccessEvaluationRequest);
                 fail(FAILURE_MESSAGE);
             } catch (SpicedbEvaluationException ex) {
-                assertEquals(ex.getMessage(), "URI error: URI error");
+                assertEquals(ex.getMessage(), URI_SYNTAX_EXCEPTION_REASON + ": " + URI_SYNTAX_EXCEPTION_INPUT);
             }
+        }
+    }
+
+    @Test
+    public void testSearchResourcesWithNullRequest() {
+
+        try {
+            service.searchResources(null);
+            fail(FAILURE_MESSAGE);
+        } catch (SpicedbEvaluationException e) {
+            assertEquals(e.getMessage(), "Invalid request. Search resources request cannot be null.");
+        }
+    }
+
+    @Test
+    public void testSearchResourcesForSuccessfulResponse() throws Exception {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupResourcesRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_RESOURCES, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            String response = "{\"result\":{\"lookedUpAt\":{\"token\":\"1111\"},\"resourceObjectId\":\"resourceId\"" +
+                    ",\"permissionship\":\"LOOKUP_PERMISSIONSHIP_UNSPECIFIED\",\"partialCaveatInfo\":" +
+                    "{\"missingRequiredContext\":[\"<string>\",\"<string>\"]},\"afterResultCursor\":{\"token\":\"" +
+                    "<string>\"}},\"error\":{\"code\":\"<integer>\",\"message\":\"<string>\",\"details\":[{\"@type\":" +
+                    "\"<string>\",\"mollit59\":{}},{\"@type\":\"<string>\",\"Excepteur7\":{},\"eiusmod26c\":{}}]}}";
+
+            httpHandlerMock.when(()-> HttpHandler.parseResponseToString(any())).thenReturn(response);
+            jsonUtilMock.when(()-> JsonUtil.jsonToResponseModel(any(), eq(LookupResourcesResult.class)))
+                    .thenCallRealMethod();
+
+            SearchResourcesResponse result = service.searchResources(searchResourcesRequest);
+
+            assertNotNull(result);
+            assertEquals(result.getResults().size(), 1);
+            assertEquals(result.getResults().get(0).getResourceId(), RESOURCE_ID);
+        }
+    }
+
+    @Test
+    public void testSearchResourcesForErrorResponse() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupResourcesRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_RESOURCES, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            SpiceDbErrorResponse errorResponse = mock(SpiceDbErrorResponse.class);
+            when(errorResponse.getCode()).thenReturn(ERROR_CODE);
+            when(errorResponse.getMessage()).thenReturn(ERROR_MESSAGE);
+            jsonUtilMock.when(() -> JsonUtil.jsonToResponseModel(any(), eq(SpiceDbErrorResponse.class)))
+                    .thenReturn(errorResponse);
+
+            try {
+                service.searchResources(searchResourcesRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException e) {
+                assertEquals(e.getMessage(), ERROR_MESSAGE);
+                assertEquals(e.getErrorCode(), ERROR_CODE);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchResourcesForUnknownErrorResponse() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupResourcesRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(0);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_RESOURCES, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            try {
+                service.searchResources(searchResourcesRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException e) {
+                assertEquals(e.getMessage(), "Looking up resources from spiceDB failed. Cannot identify error code.");
+            }
+        }
+    }
+
+    @Test
+    public void testSearchResourcesForIOException() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupResourcesRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
+                    .thenThrow(new IOException(IO_EXCEPTION_MESSAGE));
+
+            try {
+                service.searchResources(searchResourcesRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException ex) {
+                assertEquals(ex.getMessage(), IO_EXCEPTION_MESSAGE);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchResourcesForURISyntaxException() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupResourcesRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
+                    .thenThrow(new URISyntaxException(URI_SYNTAX_EXCEPTION_INPUT, URI_SYNTAX_EXCEPTION_REASON));
+
+            try {
+                service.searchResources(searchResourcesRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException ex) {
+                assertEquals(ex.getMessage(), URI_SYNTAX_EXCEPTION_REASON + ": " + URI_SYNTAX_EXCEPTION_INPUT);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsWithNullRequest() {
+
+        try {
+            service.searchSubjects(null);
+            fail(FAILURE_MESSAGE);
+        } catch (SpicedbEvaluationException e) {
+            assertEquals(e.getMessage(), "Invalid request. Search subjects request cannot be null.");
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsForSuccessfulResponse() throws Exception {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupSubjectsRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_SUBJECTS, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            String response = "{\"result\": {\"lookedUpAt\": {\"token\": \"1234\"},\"subjectObjectId\": \"subjectId\"" +
+                    ",\"excludedSubjectIds\": [\"<string>\",\"<string>\"],\"permissionship\": " +
+                    "\"LOOKUP_PERMISSIONSHIP_UNSPECIFIED\",\"partialCaveatInfo\": {\"missingRequiredContext\": " +
+                    "[\"<string>\",\"<string>\"]},\"subject\": {\"subjectObjectId\": \"<string>\"," +
+                    "\"permissionship\": \"LOOKUP_PERMISSIONSHIP_UNSPECIFIED\",\"partialCaveatInfo\": {" +
+                    "\"missingRequiredContext\": [\"<string>\",\"<string>\"]}},\"excludedSubjects\": [],\"" +
+                    "afterResultCursor\": {\"token\": \"<string>\"}}}";
+
+            httpHandlerMock.when(()-> HttpHandler.parseResponseToString(any())).thenReturn(response);
+            jsonUtilMock.when(()-> JsonUtil.jsonToResponseModel(any(), eq(LookupSubjectsResult.class)))
+                    .thenCallRealMethod();
+
+            SearchSubjectsResponse result = service.searchSubjects(searchSubjectsRequest);
+
+            assertNotNull(result);
+            assertEquals(result.getResults().size(), 1);
+            assertEquals(result.getResults().get(0).getSubjectId(), SUBJECT_ID);
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsForErrorResponse() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupSubjectsRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_BAD_REQUEST);
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_SUBJECTS, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            SpiceDbErrorResponse errorResponse = mock(SpiceDbErrorResponse.class);
+            when(errorResponse.getCode()).thenReturn(ERROR_CODE);
+            when(errorResponse.getMessage()).thenReturn(ERROR_MESSAGE);
+            jsonUtilMock.when(() -> JsonUtil.jsonToResponseModel(any(), eq(SpiceDbErrorResponse.class)))
+                    .thenReturn(errorResponse);
+
+            try {
+                service.searchSubjects(searchSubjectsRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException e) {
+                assertEquals(e.getMessage(), ERROR_MESSAGE);
+                assertEquals(e.getErrorCode(), ERROR_CODE);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsForUnknownErrorResponse() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            // Mock JSON serialization of CheckPermissionRequest
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupSubjectsRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            // Mock HTTP response
+            CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
+            StatusLine statusLine = mock(StatusLine.class);
+            when(mockedResponse.getStatusLine()).thenReturn(statusLine);
+            when(statusLine.getStatusCode()).thenReturn(0);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(
+                            SpiceDbApiConstants.LOOKUP_SUBJECTS, REQUEST_BODY))
+                    .thenReturn(mockedResponse);
+
+            try {
+                service.searchSubjects(searchSubjectsRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException e) {
+                assertEquals(e.getMessage(), "Looking up subjects from spiceDB failed. Cannot identify error code.");
+            }
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsForIOException() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupSubjectsRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
+                    .thenThrow(new IOException(IO_EXCEPTION_MESSAGE));
+
+            try {
+                service.searchSubjects(searchSubjectsRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException ex) {
+                assertEquals(ex.getMessage(), IO_EXCEPTION_MESSAGE);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchSubjectsForURISyntaxException() {
+
+        try (MockedStatic<HttpHandler> httpHandlerMock = mockStatic(HttpHandler.class);
+             MockedStatic<JsonUtil> jsonUtilMock = mockStatic(JsonUtil.class)) {
+
+            jsonUtilMock.when(() -> JsonUtil.parseToJsonString(any(LookupSubjectsRequest.class)))
+                    .thenReturn(REQUEST_BODY);
+
+            httpHandlerMock.when(() -> HttpHandler.sendPOSTRequest(any(), any()))
+                    .thenThrow(new URISyntaxException(URI_SYNTAX_EXCEPTION_INPUT, URI_SYNTAX_EXCEPTION_REASON));
+
+            try {
+                service.searchSubjects(searchSubjectsRequest);
+                fail(FAILURE_MESSAGE);
+            } catch (SpicedbEvaluationException ex) {
+                assertEquals(ex.getMessage(), URI_SYNTAX_EXCEPTION_REASON + ": " + URI_SYNTAX_EXCEPTION_INPUT);
+            }
+        }
+    }
+
+    @Test
+    public void testSearchActionsWithNullRequest() {
+
+        try {
+            service.searchActions(null);
+            fail(FAILURE_MESSAGE);
+        } catch (SpicedbEvaluationException e) {
+            assertEquals(e.getMessage(), "Invalid request. Search actions request cannot be null.");
         }
     }
 }

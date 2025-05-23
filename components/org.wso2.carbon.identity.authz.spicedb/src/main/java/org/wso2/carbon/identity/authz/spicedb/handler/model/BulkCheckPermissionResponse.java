@@ -49,7 +49,7 @@ public class BulkCheckPermissionResponse {
 
     public List<BulkCheckPermissionResult> getResults() {
 
-        return Collections.unmodifiableList(this.results);
+        return this.results != null ? Collections.unmodifiableList(this.results) : null;
     }
 
     /**

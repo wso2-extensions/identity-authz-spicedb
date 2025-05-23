@@ -22,36 +22,22 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbModelConstants;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
- * The {@code SpiceDbErrorResponse} class represents an error response from SpiceDB.
+ * The {@code ReflectSchemaResponse} class represents a response object from the Reflect Schema API. This API is
+ * expected to be used for introspection scenarios. The reflection API is still in experimental stages as of April
+ * 2025.
  */
-public class SpiceDbErrorResponse {
+public class ReflectSchemaResponse {
 
-    @SerializedName(SpiceDbModelConstants.CODE)
+    @SerializedName(SpiceDbModelConstants.DEFINITIONS)
     @Expose
-    private String code;
-    @SerializedName(SpiceDbModelConstants.MESSAGE)
-    @Expose
-    private String message;
-    @SerializedName(SpiceDbModelConstants.DETAILS)
-    @Expose
-    private List<Object> details;
+    private ArrayList<Definition> definitions;
 
-    public String getMessage() {
+    public ArrayList<Definition> getDefinitions() {
 
-        return message;
+        return definitions;
     }
 
-    public List<Object> getDetails() {
-
-        return this.details != null ? Collections.unmodifiableList(details) : null;
-    }
-
-    public String getCode() {
-
-        return code;
-    }
 }

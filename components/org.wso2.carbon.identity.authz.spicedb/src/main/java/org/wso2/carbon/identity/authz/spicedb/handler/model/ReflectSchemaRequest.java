@@ -20,38 +20,26 @@ package org.wso2.carbon.identity.authz.spicedb.handler.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbModelConstants;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
- * The {@code SpiceDbErrorResponse} class represents an error response from SpiceDB.
+ * The {@code ReflectSchemaRequest} class represents a request to reflect the schema stored in SpiceDB. This is
+ * expected to be used in introspection scenarios. The reflection API is still in experimental stages as of April 2025.
  */
-public class SpiceDbErrorResponse {
+@SuppressFBWarnings(value = "URF_UNREAD_FIELD",
+        justification = "All fields are accessed via Gson serialization")
+public class ReflectSchemaRequest {
 
-    @SerializedName(SpiceDbModelConstants.CODE)
+    @SerializedName(SpiceDbModelConstants.OPTIONAL_FILTERS)
     @Expose
-    private String code;
-    @SerializedName(SpiceDbModelConstants.MESSAGE)
-    @Expose
-    private String message;
-    @SerializedName(SpiceDbModelConstants.DETAILS)
-    @Expose
-    private List<Object> details;
+    private ArrayList<OptionalSchemaFilter> schemaFilters;
 
-    public String getMessage() {
+    public ReflectSchemaRequest(ArrayList<OptionalSchemaFilter> schemaFilters) {
 
-        return message;
+        this.schemaFilters = schemaFilters;
     }
 
-    public List<Object> getDetails() {
-
-        return this.details != null ? Collections.unmodifiableList(details) : null;
-    }
-
-    public String getCode() {
-
-        return code;
-    }
 }

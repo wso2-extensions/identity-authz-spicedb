@@ -22,36 +22,43 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbModelConstants;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
- * The {@code SpiceDbErrorResponse} class represents an error response from SpiceDB.
+ * The {@code Permission} class represents a permission object returned in a reflection response.
  */
-public class SpiceDbErrorResponse {
+public class Permission {
 
-    @SerializedName(SpiceDbModelConstants.CODE)
+    @SerializedName(SpiceDbModelConstants.PERMISSION_NAME)
     @Expose
-    private String code;
-    @SerializedName(SpiceDbModelConstants.MESSAGE)
+    private String permissionName;
+    @SerializedName(SpiceDbModelConstants.PERMISSION_COMMENT)
     @Expose
-    private String message;
-    @SerializedName(SpiceDbModelConstants.DETAILS)
+    private String permissionComment;
+    @SerializedName(SpiceDbModelConstants.PARENT_DEFINITION)
     @Expose
-    private List<Object> details;
+    private String parentDefinitionName;
+    @SerializedName(SpiceDbModelConstants.SUBJECT_TYPES)
+    @Expose
+    private ArrayList<Object> subjectTypes;
 
-    public String getMessage() {
+    public String getPermissionName() {
 
-        return message;
+        return permissionName;
     }
 
-    public List<Object> getDetails() {
+    public String getPermissionComment() {
 
-        return this.details != null ? Collections.unmodifiableList(details) : null;
+        return permissionComment;
     }
 
-    public String getCode() {
+    public String getParentDefinitionName() {
 
-        return code;
+        return parentDefinitionName;
+    }
+
+    public ArrayList<Object> getSubjectTypes() {
+
+        return subjectTypes;
     }
 }

@@ -20,16 +20,17 @@ package org.wso2.carbon.identity.authz.spicedb.handler.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.identity.authorization.framework.model.AccessEvaluationRequest;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbModelConstants;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * The {@code CheckPermissionRequest} class represents the request body of a permission check request sent to SpiceDB.
  */
+@SuppressFBWarnings(value = "URF_UNREAD_FIELD",
+        justification = "All fields are accessed via Gson serialization/deserialization")
 public class CheckPermissionRequest {
 
     @SerializedName(SpiceDbModelConstants.RESOURCE)
@@ -50,10 +51,15 @@ public class CheckPermissionRequest {
 
     public CheckPermissionRequest(AccessEvaluationRequest accessEvaluationRequest) throws IllegalArgumentException {
 
-        if (accessEvaluationRequest.getResource() == null &&
-                accessEvaluationRequest.getActionObject() == null &&
+        if (accessEvaluationRequest.getResource() == null ||
+                accessEvaluationRequest.getActionObject() == null ||
                 accessEvaluationRequest.getSubject() == null) {
             throw new IllegalArgumentException("Invalid request. Resource, action, and subject " +
+                    "must be provided for permission check.");
+        }
+        if (accessEvaluationRequest.getResource().getResourceId() == null ||
+                accessEvaluationRequest.getSubject().getSubjectId() == null) {
+            throw new IllegalArgumentException("Invalid request. Resource Id and subject Id " +
                     "must be provided for permission check.");
         }
         this.resource = new Resource(accessEvaluationRequest.getResource().getResourceType(),
@@ -87,26 +93,6 @@ public class CheckPermissionRequest {
 
         this.context = new HashMap<>();
         this.context.putAll(context);
-    }
-
-    public Resource getResource() {
-
-        return resource;
-    }
-
-    public String getPermission() {
-
-        return permission;
-    }
-
-    public Subject getSubject() {
-
-        return new Subject(subject);
-    }
-
-    public Map<String, Object> getContext() {
-
-        return Collections.unmodifiableMap(context);
     }
 
     public boolean isWithTracing() {

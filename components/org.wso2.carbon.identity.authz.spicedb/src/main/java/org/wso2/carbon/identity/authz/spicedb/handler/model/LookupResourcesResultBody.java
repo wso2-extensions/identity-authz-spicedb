@@ -22,30 +22,38 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.wso2.carbon.identity.authz.spicedb.constants.SpiceDbModelConstants;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
- * The {@code CheckPermissionResponse} class represents a response from a permission check request sent to SpiceDB.
+ * The {@code LookupResourcesResultBody} class holds all the fields in a single element in a results stream returned
+ * from a lookup resources request.
  */
-public class CheckPermissionResponse {
+public class LookupResourcesResultBody {
 
-    @SerializedName(SpiceDbModelConstants.CHECKED_AT)
+    @SerializedName(SpiceDbModelConstants.LOOKED_AT)
     @Expose
-    private ZedToken token;
+    private ZedToken lookedAt;
+    @SerializedName(SpiceDbModelConstants.RESOURCE_OBJECT_ID)
+    @Expose
+    private String resourceId;
     @SerializedName(SpiceDbModelConstants.PERMISSION_RESULT)
     @Expose
     private String permissionship;
     @SerializedName(SpiceDbModelConstants.PARTIAL_CAVEAT_INFO)
     @Expose
     private Map<String, Object> partialCaveatInfo;
-    @SerializedName(SpiceDbModelConstants.DEBUG_TRACE)
+    @SerializedName(SpiceDbModelConstants.AFTER_RESULT_CURSOR)
     @Expose
-    private Map<String, Object> debugTrace;
+    private Map<String, Object> afterResultCursor;
 
-    public String getToken() {
+    public String lookedAt() {
 
-        return token.getToken();
+        return lookedAt.getToken();
+    }
+
+    public String getResourceId() {
+
+        return resourceId;
     }
 
     public String getPermissionship() {
@@ -55,25 +63,11 @@ public class CheckPermissionResponse {
 
     public Map<String, Object> getPartialCaveatInfo() {
 
-        return this.partialCaveatInfo != null ? Collections.unmodifiableMap(this.partialCaveatInfo) : null;
+        return partialCaveatInfo;
     }
 
-    public Map<String, Object> getDebugTrace() {
+    public Map<String, Object> getAfterResultCursor() {
 
-        return this.debugTrace != null ? Collections.unmodifiableMap(this.debugTrace) : null;
-    }
-
-    /**
-     * Checks whether the permission is authorized or not based on the permission result.
-     * <p>
-     *     If the permission result is {@link SpiceDbModelConstants#HAS_PERMISSION}, then the permission is authorized.
-     *     Otherwise, if the result is {@link SpiceDbModelConstants#CONDITIONAL_PERMISSION} or
-     *     {@link SpiceDbModelConstants#NO_PERMISSION} the permission is not authorized.
-     *</p>
-     * @return {@code true} if the permission is authorized, {@code false} otherwise.
-     */
-    public boolean isAuthorized() {
-
-        return getPermissionship().equals(SpiceDbModelConstants.HAS_PERMISSION);
+        return afterResultCursor;
     }
 }
